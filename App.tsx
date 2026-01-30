@@ -58,7 +58,7 @@ const App: React.FC = () => {
                {/* Key Verification */}
                <div className="flex items-center gap-1.5 text-gray-400">
                   <ShieldCheck size={12} className="text-cyber-primary" />
-                  <span className="tracking-widest">KEY: AIza...37s</span>
+                  <span className="tracking-widest">KEY: SECURE_ENV</span>
                </div>
 
                {/* Latency Simulation */}

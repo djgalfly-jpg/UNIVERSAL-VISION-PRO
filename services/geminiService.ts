@@ -2,23 +2,22 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { SongAnalysisData } from "../types";
 
 const getClient = () => {
-  // PRIORIDAD 1: Clave Directa (Para que funcione inmediatamente en Vercel)
-  const hardcodedKey = "AIzaSyD4u0ypzkoVJA5Dp7ayB1lxmAPtEc5I37s";
+  // CONFIGURACIÓN DE SEGURIDAD:
+  // La API Key debe obtenerse EXCLUSIVAMENTE de las variables de entorno para evitar bloqueos de seguridad.
+  // En Vercel/Netlify: Settings > Environment Variables > Key: API_KEY
   
-  // PRIORIDAD 2: Variables de entorno (Opcional, si lo configuras en Vercel)
-  // Usamos try-catch porque 'process' puede no existir en algunos navegadores/entornos
-  let envKey = "";
+  let apiKey = undefined;
+  
   try {
+    // Acceso seguro a process.env evitando ReferenceError en entornos puros de navegador
     // @ts-ignore
-    envKey = (typeof process !== 'undefined' && process.env?.API_KEY) ? process.env.API_KEY : "";
+    apiKey = process.env.API_KEY;
   } catch (e) {
-    console.log("Environment variable access skipped");
+    console.warn("Entorno de ejecución sin acceso directo a process.env");
   }
-
-  const apiKey = hardcodedKey || envKey;
   
   if (!apiKey) {
-    throw new Error("CRITICAL ERROR: API KEY NOT FOUND. Access Denied.");
+    throw new Error("SYSTEM IDENTITY ERROR: API KEY NOT DETECTED. Configure 'API_KEY' in your environment variables. DO NOT hardcode it in source.");
   }
   return new GoogleGenAI({ apiKey });
 };
@@ -40,8 +39,8 @@ export const blobToBase64 = (blob: Blob): Promise<string> => {
 export const analyzeSong = async (audioBase64: string, mimeType: string): Promise<SongAnalysisData> => {
   const ai = getClient();
   
-  // Usamos el modelo Flash para rapidez, o Pro si se requiere razonamiento profundo
-  const modelId = "gemini-3-flash-preview"; 
+  // UPGRADE: Usamos Gemini 3.0 Pro para el análisis más detallado y complejo posible.
+  const modelId = "gemini-3-pro-preview"; 
 
   const prompt = `
     ROLE: You are GALFLY & KRYLIN, Senior A&R Executives at Universal Orchard Music. 
@@ -232,7 +231,7 @@ export const analyzeSong = async (audioBase64: string, mimeType: string): Promis
     console.error("Analysis failed:", error);
     // Mejor manejo de errores para el frontend
     if (error.message?.includes("API key")) {
-        throw new Error("System Identity Error: API KEY INVALID OR MISSING.");
+        throw new Error("System Identity Error: API KEY INVALID OR MISSING. Check environment variables.");
     }
     throw error;
   }
