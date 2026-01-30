@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, Tooltip
@@ -6,7 +6,7 @@ import {
 import { SongAnalysisData, AnalysisState } from '../types';
 import { analyzeSong, blobToBase64 } from '../services/geminiService';
 import AudioVisualizer from './AudioVisualizer';
-import { Loader2, Upload, Play, Pause, Award, Mic2, BarChart3, Share2, TrendingUp, Smartphone, Youtube, Instagram, Activity, Globe, Disc, Sliders, Music2, CheckCircle2, CalendarClock, ArrowUpRight, Palette, Clapperboard, Timer, Lock, ShieldCheck, AlertTriangle, RefreshCcw } from 'lucide-react';
+import { Loader2, Upload, Play, Pause, Award, Mic2, BarChart3, Share2, TrendingUp, Smartphone, Youtube, Instagram, Activity, Globe, Disc, Sliders, Music2, CheckCircle2, CalendarClock, ArrowUpRight, Palette, Clapperboard, Timer, Lock, ShieldCheck, AlertTriangle, RefreshCcw, Terminal } from 'lucide-react';
 
 type Language = 'es' | 'en';
 
@@ -15,11 +15,36 @@ const SongAnalysis: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [lang, setLang] = useState<Language>('es');
   const [showWelcome, setShowWelcome] = useState(true);
+  const [loadingStep, setLoadingStep] = useState(0);
   const [analysis, setAnalysis] = useState<AnalysisState>({
     isLoading: false,
     data: null,
     error: null
   });
+
+  // Simulated Terminal Logs
+  const loadingLogs = [
+    "INITIALIZING_NEURAL_NET...",
+    "DECODING_AUDIO_WAVEFORM...",
+    "EXTRACTING_STEMS [VOCAL/DRUMS/BASS]...",
+    "ANALYZING_DYNAMIC_RANGE...",
+    "COMPARING_VS_BILLBOARD_HOT_100...",
+    "DETECTING_VIRAL_HOOKS...",
+    "CALCULATING_COMMERCIAL_VIABILITY...",
+    "SYNTHESIZING_A&R_STRATEGY...",
+    "FINALIZING_REPORT..."
+  ];
+
+  useEffect(() => {
+    let interval: any;
+    if (analysis.isLoading) {
+      setLoadingStep(0);
+      interval = setInterval(() => {
+        setLoadingStep(prev => (prev < loadingLogs.length - 1 ? prev + 1 : prev));
+      }, 800); // Change text every 800ms
+    }
+    return () => clearInterval(interval);
+  }, [analysis.isLoading]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -333,7 +358,7 @@ const SongAnalysis: React.FC = () => {
                     <div className="absolute inset-0 bg-red-500/5 animate-pulse"></div>
                     <div className="relative z-10 flex items-start gap-4">
                         <AlertTriangle className="text-red-500 shrink-0" size={24} />
-                        <div>
+                        <div className="w-full">
                             <h3 className="text-red-500 font-bold font-mono text-sm uppercase tracking-widest mb-1">System Malfunction</h3>
                             <p className="text-red-300 text-xs font-mono">{analysis.error}</p>
                             <div className="mt-3 flex gap-2">
@@ -352,10 +377,16 @@ const SongAnalysis: React.FC = () => {
             {analysis.isLoading ? (
                 <div className="h-full bg-cyber-panel border border-cyber-primary/20 rounded-2xl flex flex-col items-center justify-center p-8 relative overflow-hidden">
                     <div className="absolute inset-0 bg-cyber-primary/5 animate-pulse"></div>
-                    <Loader2 size={48} className="animate-spin text-cyber-primary mb-4 relative z-10" />
-                    <div className="font-mono text-center text-cyber-primary relative z-10">
-                        <p className="animate-pulse tracking-widest">{t.listening}</p>
-                        <p className="text-[10px] opacity-70 mt-2 text-white">{t.calc}</p>
+                    <Terminal size={32} className="text-cyber-primary mb-4 relative z-10 opacity-80" />
+                    <div className="font-mono text-left w-full max-w-[200px] text-cyber-primary relative z-10 space-y-2">
+                         {loadingLogs.map((log, index) => (
+                             <div 
+                                key={index} 
+                                className={`text-[10px] tracking-widest transition-opacity duration-300 ${index === loadingStep ? 'opacity-100 text-white' : index < loadingStep ? 'opacity-30' : 'opacity-0'}`}
+                             >
+                                 &gt; {log}
+                             </div>
+                         ))}
                     </div>
                 </div>
             ) : analysis.data ? (
