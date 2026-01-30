@@ -271,7 +271,12 @@ const SongAnalysis: React.FC = () => {
                 </div>
                 <label className="cursor-pointer flex items-center gap-2 px-5 py-2 bg-cyber-primary/5 border border-cyber-primary text-cyber-primary font-bold rounded hover:bg-cyber-primary hover:text-black transition-all uppercase tracking-widest text-[10px]">
                     <Upload size={14} /> {t.import}
-                    <input type="file" onChange={handleFileChange} accept="audio/*" className="hidden" />
+                    <input 
+                      type="file" 
+                      onChange={handleFileChange} 
+                      accept=".mp3,.wav,.flac,audio/mpeg,audio/wav,audio/flac,audio/*" 
+                      className="hidden" 
+                    />
                 </label>
             </div>
 
