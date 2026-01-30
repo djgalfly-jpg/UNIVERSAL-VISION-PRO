@@ -6,7 +6,7 @@ import {
 import { SongAnalysisData, AnalysisState } from '../types';
 import { analyzeSong, blobToBase64 } from '../services/geminiService';
 import AudioVisualizer from './AudioVisualizer';
-import { Loader2, Upload, Play, Pause, Award, Mic2, BarChart3, Share2, TrendingUp, Smartphone, Youtube, Instagram, Activity, Globe, Disc, Sliders, Music2, CheckCircle2, CalendarClock, ArrowUpRight, Palette, Clapperboard, Timer, Lock, ShieldCheck } from 'lucide-react';
+import { Loader2, Upload, Play, Pause, Award, Mic2, BarChart3, Share2, TrendingUp, Smartphone, Youtube, Instagram, Activity, Globe, Disc, Sliders, Music2, CheckCircle2, CalendarClock, ArrowUpRight, Palette, Clapperboard, Timer, Lock, ShieldCheck, AlertTriangle, RefreshCcw } from 'lucide-react';
 
 type Language = 'es' | 'en';
 
@@ -322,9 +322,22 @@ const SongAnalysis: React.FC = () => {
                  </button>
             </div>
             
+            {/* ERROR DISPLAY SYSTEM */}
             {analysis.error && (
-                <div className="mt-4 p-3 bg-red-950/30 border border-red-500/30 rounded text-red-400 text-xs font-mono">
-                    ERROR: {analysis.error}
+                <div className="mt-6 p-4 bg-red-950/40 border border-red-500 rounded-lg relative overflow-hidden animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute inset-0 bg-red-500/5 animate-pulse"></div>
+                    <div className="relative z-10 flex items-start gap-4">
+                        <AlertTriangle className="text-red-500 shrink-0" size={24} />
+                        <div>
+                            <h3 className="text-red-500 font-bold font-mono text-sm uppercase tracking-widest mb-1">System Malfunction</h3>
+                            <p className="text-red-300 text-xs font-mono">{analysis.error}</p>
+                            <div className="mt-3 flex gap-2">
+                                <button onClick={handleAnalyze} className="px-3 py-1 bg-red-900/50 hover:bg-red-800/50 border border-red-500/30 rounded text-[10px] text-red-200 uppercase tracking-wider transition-colors flex items-center gap-2">
+                                    <RefreshCcw size={12} /> Retry Protocol
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

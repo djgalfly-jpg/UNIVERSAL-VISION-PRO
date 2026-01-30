@@ -2,11 +2,23 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { SongAnalysisData } from "../types";
 
 const getClient = () => {
-  // Configuración directa de la API Key para asegurar el funcionamiento en Vercel
-  const apiKey = "AIzaSyD4u0ypzkoVJA5Dp7ayB1lxmAPtEc5I37s";
+  // PRIORIDAD 1: Clave Directa (Para que funcione inmediatamente en Vercel)
+  const hardcodedKey = "AIzaSyD4u0ypzkoVJA5Dp7ayB1lxmAPtEc5I37s";
+  
+  // PRIORIDAD 2: Variables de entorno (Opcional, si lo configuras en Vercel)
+  // Usamos try-catch porque 'process' puede no existir en algunos navegadores/entornos
+  let envKey = "";
+  try {
+    // @ts-ignore
+    envKey = (typeof process !== 'undefined' && process.env?.API_KEY) ? process.env.API_KEY : "";
+  } catch (e) {
+    console.log("Environment variable access skipped");
+  }
+
+  const apiKey = hardcodedKey || envKey;
   
   if (!apiKey) {
-    throw new Error("API Key is missing. Please check your environment configuration.");
+    throw new Error("CRITICAL ERROR: API KEY NOT FOUND. Access Denied.");
   }
   return new GoogleGenAI({ apiKey });
 };
@@ -17,8 +29,6 @@ export const blobToBase64 = (blob: Blob): Promise<string> => {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result as string;
-      // Depending on the browser/file, it might or might not have the prefix.
-      // Usually readAsDataURL includes "data:audio/mp3;base64,..."
       const base64Data = base64String.includes(',') ? base64String.split(',')[1] : base64String;
       resolve(base64Data);
     };
@@ -30,6 +40,7 @@ export const blobToBase64 = (blob: Blob): Promise<string> => {
 export const analyzeSong = async (audioBase64: string, mimeType: string): Promise<SongAnalysisData> => {
   const ai = getClient();
   
+  // Usamos el modelo Flash para rapidez, o Pro si se requiere razonamiento profundo
   const modelId = "gemini-3-flash-preview"; 
 
   const prompt = `
@@ -210,17 +221,19 @@ export const analyzeSong = async (audioBase64: string, mimeType: string): Promis
 
     const text = response.text;
     if (!text) {
-        console.error("Gemini Response Error", response);
-        const finishReason = response.candidates?.[0]?.finishReason;
-        throw new Error(`AI Analysis Failed. Reason: ${finishReason || 'Unknown'}`);
+        throw new Error(`AI Analysis Failed. No response text.`);
     }
     
     // Clean potential markdown blocks just in case
     const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanText) as SongAnalysisData;
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Analysis failed:", error);
+    // Mejor manejo de errores para el frontend
+    if (error.message?.includes("API key")) {
+        throw new Error("System Identity Error: API KEY INVALID OR MISSING.");
+    }
     throw error;
   }
 };
