@@ -2,7 +2,9 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { SongAnalysisData } from "../types";
 
 const getClient = () => {
-  const apiKey = process.env.API_KEY;
+  // Configuración directa de la API Key para asegurar el funcionamiento en Vercel
+  const apiKey = "AIzaSyD4u0ypzkoVJA5Dp7ayB1lxmAPtEc5I37s";
+  
   if (!apiKey) {
     throw new Error("API Key is missing. Please check your environment configuration.");
   }
